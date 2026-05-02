@@ -40,7 +40,7 @@ function Login() {
   return (
     <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg)' }}>
       <div className="card" style={{ maxWidth: '400px', width: '100%' }}>
-        <h2 style={{ marginBottom: '24px', textAlign: 'center' }}>Secure Portal Access</h2>
+        <h2 style={{ marginBottom: '24px', textAlign: 'center' }}>Secure Portal Access</h2> 
         <form onSubmit={handleRequestOtp}>
           <div className="form-group" style={{ marginBottom: '20px' }}>
             <label className="form-label">Administrator Email</label>

@@ -7,11 +7,27 @@ const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
 const { Otp } = require('./models');
 
+const isProd = process.env.NODE_ENV === 'production';
+
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
+
+// CORS configuration
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5000',
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
 app.use(cors({
-  origin: 'http://localhost:5173', // Vite default port
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 
@@ -93,7 +109,8 @@ app.post('/api/auth/verify-otp', async (req, res) => {
     // Set HTTP-only cookie
     res.cookie('token', token, {
       httpOnly: true,
-      secure: false, // set to true in production with HTTPS
+      secure: isProd, // set to true in production with HTTPS
+      sameSite: isProd ? 'none' : 'lax',
       maxAge: 24 * 60 * 60 * 1000 // 24 hours
     });
 
@@ -150,11 +167,28 @@ app.use('/api/upload', authenticateToken, require('./routes/upload'));
 
 const PORT = process.env.PORT || 5000;
 
-mongoose.connect(process.env.MONGODB_URI, { family: 4, serverSelectionTimeoutMS: 5000 })
-  .then(() => {
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, { 
+      family: 4, 
+      serverSelectionTimeoutMS: 5000 
+    });
     console.log('Connected to MongoDB');
+  } catch (err) {
+    console.error('MongoDB connection error:', err);
+    if (!isProd) process.exit(1);
+  }
+};
+
+if (!isProd) {
+  connectDB().then(() => {
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
-  })
-  .catch(err => console.error('MongoDB connection error:', err));
+  });
+} else {
+  // For Vercel/Serverless: connect on first request if needed, or rely on Vercel's behavior
+  connectDB();
+}
+
+module.exports = app;
