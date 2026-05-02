@@ -179,28 +179,41 @@ app.use('/api/upload', authenticateToken, require('./routes/upload'));
 
 const PORT = process.env.PORT || 5000;
 
+let cachedDb = null;
+
 const connectDB = async () => {
+  if (cachedDb) return cachedDb;
+
   try {
-    await mongoose.connect(process.env.MONGODB_URI, { 
-      family: 4, 
-      serverSelectionTimeoutMS: 5000 
+    const db = await mongoose.connect(process.env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000,
     });
     console.log('Connected to MongoDB');
+    cachedDb = db;
+    return db;
   } catch (err) {
     console.error('MongoDB connection error:', err);
+    // In dev, we want to know immediately. In prod, we let the request fail.
     if (!isProd) process.exit(1);
+    throw err;
   }
 };
 
+// Middleware to ensure DB is connected
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    res.status(500).json({ error: 'Database connection failed' });
+  }
+});
+
 if (!isProd) {
-  connectDB().then(() => {
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
   });
-} else {
-  // For Vercel/Serverless: connect on first request if needed, or rely on Vercel's behavior
-  connectDB();
 }
 
 module.exports = app;
