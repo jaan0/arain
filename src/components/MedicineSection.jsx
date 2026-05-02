@@ -90,16 +90,18 @@ export function MedicineSection({ api }) {
         </div>
         <form onSubmit={handleLogUsage}>
           <div className="form-group" style={{ marginBottom: '16px' }}>
+            <label className="form-label">Select Medicine</label>
             <select value={newUsage.medicineId} onChange={handleMedicineChange} required style={{ width: '100%' }}>
-              <option value="" disabled>Select Medicine</option>
+              <option value="" disabled>Choose medicine...</option>
               {stock.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
             </select>
           </div>
           <div className="form-row">
             <div className="form-group" style={{ flex: 1 }}>
-              <input type="number" placeholder="Units Used" className="mono" value={newUsage.unitsUsed} onChange={handleUnitsChange} required style={{ width: '100%' }} />
+              <label className="form-label">Units Used</label>
+              <input type="number" placeholder="e.g. 5" className="mono" value={newUsage.unitsUsed} onChange={handleUnitsChange} required style={{ width: '100%' }} />
             </div>
-            <button type="submit" className="btn-primary" disabled={stock.length === 0} style={{ height: '42px' }}>
+            <button type="submit" className="btn-primary" disabled={stock.length === 0} style={{ height: '42px', alignSelf: 'flex-end' }}>
               Log Dose
             </button>
           </div>
@@ -119,24 +121,28 @@ export function MedicineSection({ api }) {
         </div>
         <form onSubmit={handleAddStock}>
           <div className="form-group" style={{ marginBottom: '16px' }}>
+            <label className="form-label">Medicine Name</label>
             {isNewMedicine || stock.length === 0 ? (
               <div style={{ display: 'flex', gap: '8px' }}>
-                <input type="text" required value={newStock.name} onChange={e => setNewStock({...newStock, name: e.target.value})} placeholder="Medicine Name" style={{ flex: 1 }} />
+                <input type="text" required value={newStock.name} onChange={e => setNewStock({...newStock, name: e.target.value})} placeholder="e.g. ND Vaccine" style={{ flex: 1 }} />
                 {stock.length > 0 && <button type="button" onClick={() => setIsNewMedicine(false)} className="btn-outline">×</button>}
               </div>
             ) : (
               <select required value={newStock.name} onChange={e => e.target.value === 'NEW' ? setIsNewMedicine(true) : setNewStock({...newStock, name: e.target.value})} style={{ width: '100%' }}>
+                <option value="" disabled>Select existing or add new...</option>
                 {stock.map(s => <option key={s._id} value={s.name}>{s.name}</option>)}
-                <option value="NEW">+ Add New...</option>
+                <option value="NEW">+ Add New Type...</option>
               </select>
             )}
           </div>
           <div className="form-row">
             <div className="form-group" style={{ flex: 1 }}>
-              <input type="number" placeholder="Units" className="mono" required value={newStock.quantity} onChange={e => setNewStock({...newStock, quantity: e.target.value})} style={{ width: '100%' }} />
+              <label className="form-label">Units</label>
+              <input type="number" placeholder="e.g. 100" className="mono" required value={newStock.quantity} onChange={e => setNewStock({...newStock, quantity: e.target.value})} style={{ width: '100%' }} />
             </div>
             <div className="form-group" style={{ flex: 1 }}>
-              <input type="number" placeholder="Price/Unit" className="mono" required value={newStock.pricePerUnit} onChange={e => setNewStock({...newStock, pricePerUnit: e.target.value})} style={{ width: '100%' }} />
+              <label className="form-label">Price / Unit</label>
+              <input type="number" placeholder="e.g. 550" className="mono" required value={newStock.pricePerUnit} onChange={e => setNewStock({...newStock, pricePerUnit: e.target.value})} style={{ width: '100%' }} />
             </div>
           </div>
           <button type="submit" className="btn-outline" style={{ width: '100%', marginTop: '16px' }}>Add Stock</button>

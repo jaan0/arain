@@ -90,22 +90,24 @@ export function FeedSection({ api }) {
         </div>
         <form onSubmit={handleLogUsage}>
           <div className="form-group" style={{ marginBottom: '16px' }}>
+            <label className="form-label">Feed Type</label>
             <select value={newUsage.feedId} onChange={handleFeedChange} required style={{ width: '100%' }}>
-              <option value="" disabled>Select Feed Type</option>
+              <option value="" disabled>Choose feed from stock...</option>
               {stock.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
             </select>
           </div>
           <div className="form-row">
             <div className="form-group" style={{ flex: 1 }}>
-              <input type="number" placeholder="Bori Used" className="mono" value={newUsage.boriUsed} onChange={handleBoriChange} required style={{ width: '100%' }} />
+              <label className="form-label">Quantity (Bori)</label>
+              <input type="number" placeholder="e.g. 2" className="mono" value={newUsage.boriUsed} onChange={handleBoriChange} required style={{ width: '100%' }} />
             </div>
-            <button type="submit" className="btn-primary" disabled={stock.length === 0} style={{ height: '42px' }}>
+            <button type="submit" className="btn-primary" disabled={stock.length === 0} style={{ height: '42px', alignSelf: 'flex-end' }}>
               Log Feed
             </button>
           </div>
           {newUsage.cost > 0 && (
             <div style={{ marginTop: '12px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              Est. Cost: <span className="mono text-red">PKR {newUsage.cost.toLocaleString()}</span>
+              Estimated Cost: <span className="mono text-red">PKR {newUsage.cost.toLocaleString()}</span>
             </div>
           )}
         </form>
@@ -119,13 +121,15 @@ export function FeedSection({ api }) {
         </div>
         <form onSubmit={handleAddStock}>
           <div className="form-group" style={{ marginBottom: '16px' }}>
+            <label className="form-label">Select or Add Feed Name</label>
             {isNewFeed || stock.length === 0 ? (
               <div style={{ display: 'flex', gap: '8px' }}>
-                <input type="text" required value={newStock.name} onChange={e => setNewStock({...newStock, name: e.target.value})} placeholder="New Feed Name" style={{ flex: 1 }} />
+                <input type="text" required value={newStock.name} onChange={e => setNewStock({...newStock, name: e.target.value})} placeholder="e.g. Broiler Finisher" style={{ flex: 1 }} />
                 {stock.length > 0 && <button type="button" onClick={() => setIsNewFeed(false)} className="btn-outline">×</button>}
               </div>
             ) : (
               <select required value={newStock.name} onChange={e => e.target.value === 'NEW' ? setIsNewFeed(true) : setNewStock({...newStock, name: e.target.value})} style={{ width: '100%' }}>
+                <option value="" disabled>Select existing or add new...</option>
                 {stock.map(s => <option key={s._id} value={s.name}>{s.name}</option>)}
                 <option value="NEW">+ Add New Type...</option>
               </select>
@@ -133,10 +137,12 @@ export function FeedSection({ api }) {
           </div>
           <div className="form-row">
             <div className="form-group" style={{ flex: 1 }}>
-              <input type="number" placeholder="Qty (Bori)" className="mono" required value={newStock.quantityBori} onChange={e => setNewStock({...newStock, quantityBori: e.target.value})} style={{ width: '100%' }} />
+              <label className="form-label">Qty (Bori)</label>
+              <input type="number" placeholder="e.g. 10" className="mono" required value={newStock.quantityBori} onChange={e => setNewStock({...newStock, quantityBori: e.target.value})} style={{ width: '100%' }} />
             </div>
             <div className="form-group" style={{ flex: 1 }}>
-              <input type="number" placeholder="Price/Bori" className="mono" required value={newStock.pricePerBori} onChange={e => setNewStock({...newStock, pricePerBori: e.target.value})} style={{ width: '100%' }} />
+              <label className="form-label">Price / Bori</label>
+              <input type="number" placeholder="e.g. 4500" className="mono" required value={newStock.pricePerBori} onChange={e => setNewStock({...newStock, pricePerBori: e.target.value})} style={{ width: '100%' }} />
             </div>
           </div>
           <button type="submit" className="btn-outline" style={{ width: '100%', marginTop: '16px' }}>Confirm Purchase</button>

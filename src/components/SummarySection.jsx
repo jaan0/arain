@@ -113,11 +113,15 @@ export function SummarySection({ api }) {
         </div>
         <form onSubmit={handleLogMisc}>
           <div className="form-group" style={{ marginBottom: '12px' }}>
-            <input type="text" placeholder="Description" value={newMisc.description} onChange={e => setNewMisc({ ...newMisc, description: e.target.value })} required style={{ width: '100%' }} />
+            <label className="form-label">Expense Description</label>
+            <input type="text" placeholder="e.g. Electric bill or repairs" value={newMisc.description} onChange={e => setNewMisc({ ...newMisc, description: e.target.value })} required style={{ width: '100%' }} />
           </div>
           <div className="form-row">
-            <input type="number" placeholder="Amount" className="mono" value={newMisc.amount} onChange={e => setNewMisc({ ...newMisc, amount: parseInt(e.target.value) || 0 })} required style={{ flex: 1 }} />
-            <button type="submit" className="btn-primary" style={{ padding: '0 20px' }}>Log</button>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label className="form-label">Amount (PKR)</label>
+              <input type="number" placeholder="e.g. 1500" className="mono" value={newMisc.amount} onChange={e => setNewMisc({ ...newMisc, amount: parseInt(e.target.value) || 0 })} required style={{ width: '100%' }} />
+            </div>
+            <button type="submit" className="btn-primary" style={{ padding: '0 24px', height: '42px', alignSelf: 'flex-end' }}>Log</button>
           </div>
         </form>
       </div>

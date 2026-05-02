@@ -102,19 +102,83 @@ export function ProfilePage({ profile, type, api, onBack, onRefresh }) {
   const handleDownloadInvoice = async () => {
     try {
       const doc = new jsPDF();
-      doc.setFontSize(22);
-      doc.text('ARAIN POULTRY FARM', 105, 20, { align: 'center' });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      
+      // Header
+      doc.setFillColor(59, 130, 246); // Blue theme
+      doc.rect(0, 0, pageWidth, 40, 'F');
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(24);
+      doc.setFont('helvetica', 'bold');
+      doc.text('ARAIN POULTRY FARM', pageWidth / 2, 22, { align: 'center' });
+      
       doc.setFontSize(10);
-      doc.text(`Statement for ${data.name}`, 105, 30, { align: 'center' });
-      const rows = distributions.map(d => [formatDate(d.date), 'Egg Delivery', d.paid ? 'PAID' : 'PENDING', `PKR ${d.totalAmount?.toLocaleString()}`]);
-      autoTable(doc, {
-        startY: 40,
-        head: [['Date', 'Type', 'Status', 'Amount']],
-        body: rows,
-        theme: 'striped'
+      doc.setFont('helvetica', 'normal');
+      doc.text('Village & Post Office Arain, Tehsil & Dist. Okara', pageWidth / 2, 30, { align: 'center' });
+      doc.text('Phone: +92 300 1234567 | Date: ' + new Date().toLocaleDateString(), pageWidth / 2, 35, { align: 'center' });
+
+      // Customer Info
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`FINANCIAL STATEMENT: ${data.name.toUpperCase()}`, 15, 55);
+      
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Report Period: All Time`, 15, 62);
+      doc.text(`Closing Balance: PKR ${(data.balance || 0).toLocaleString()}`, pageWidth - 15, 62, { align: 'right' });
+
+      // Combine and sort data
+      const allEntries = [
+        ...distributions.map(d => ({
+          date: d.date,
+          desc: `Egg Delivery (${d.paiti}P ${d.trays}T @ ${d.ratePerPaiti || d.totalAmount/(d.paiti + d.trays/12)})`,
+          debit: d.totalAmount,
+          credit: 0,
+          status: d.paid ? 'PAID' : 'UNPAID'
+        })),
+        ...ledger.map(l => ({
+          date: l.date,
+          desc: l.description,
+          debit: l.type === 'CREDIT_GIVEN' ? l.amount : 0,
+          credit: l.type === 'PAYMENT_RECEIVED' ? l.amount : 0,
+          status: 'RECORDED'
+        }))
+      ].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      let runningBalance = 0;
+      const rows = allEntries.map(e => {
+        runningBalance += (e.debit - e.credit);
+        return [
+          formatDate(e.date),
+          e.desc,
+          e.status,
+          e.debit > 0 ? e.debit.toLocaleString() : '-',
+          e.credit > 0 ? e.credit.toLocaleString() : '-',
+          runningBalance.toLocaleString()
+        ];
       });
-      doc.save(`Invoice_${data.name}.pdf`);
-    } catch (err) { alert('PDF Error'); }
+
+      autoTable(doc, {
+        startY: 70,
+        head: [['Date', 'Description', 'Status', 'Debit', 'Credit', 'Balance']],
+        body: rows,
+        headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255], fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [245, 247, 250] },
+        styles: { fontSize: 8, cellPadding: 4 },
+        columnStyles: {
+          3: { halign: 'right' },
+          4: { halign: 'right' },
+          5: { halign: 'right', fontStyle: 'bold' }
+        }
+      });
+
+      doc.save(`Statement_${data.name}_${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (err) { 
+      console.error(err);
+      alert('Failed to generate PDF'); 
+    }
   };
 
   return (
@@ -125,8 +189,8 @@ export function ProfilePage({ profile, type, api, onBack, onRefresh }) {
         </button>
         <h2 className="section-title">Profile Details</h2>
         <div style={{ flex: 1 }}></div>
-        <button onClick={handleDownloadInvoice} className="btn-primary" style={{ padding: '8px 12px' }}>
-          <Download size={18} />
+        <button onClick={handleDownloadInvoice} className="btn-primary" style={{ padding: '8px 12px', gap: '8px', display: 'flex', alignItems: 'center' }}>
+          <Download size={18} /> <span style={{ fontSize: '0.8rem' }}>Statement</span>
         </button>
       </div>
 
@@ -173,17 +237,17 @@ export function ProfilePage({ profile, type, api, onBack, onRefresh }) {
           </div>
           <div className="form-group" style={{ marginBottom: '12px' }}>
             <label className="form-label">Full Name</label>
-            <input type="text" value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} />
+            <input type="text" placeholder="e.g. Ali Jan" value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} />
           </div>
           <div className="form-row">
             <div className="form-group" style={{ flex: 1 }}>
-              <label className="form-label">Phone</label>
-              <input type="text" value={editForm.phone} onChange={e => setEditForm({ ...editForm, phone: e.target.value })} />
+              <label className="form-label">Phone Number</label>
+              <input type="text" placeholder="0300-1234567" value={editForm.phone} onChange={e => setEditForm({ ...editForm, phone: e.target.value })} />
             </div>
             {type === 'labour' && (
               <div className="form-group" style={{ flex: 1 }}>
-                <label className="form-label">Salary (PKR)</label>
-                <input type="number" className="mono" value={editForm.salary} onChange={e => setEditForm({ ...editForm, salary: Number(e.target.value) })} />
+                <label className="form-label">Monthly Salary</label>
+                <input type="number" className="mono" placeholder="35000" value={editForm.salary} onChange={e => setEditForm({ ...editForm, salary: Number(e.target.value) })} />
               </div>
             )}
           </div>
@@ -201,16 +265,23 @@ export function ProfilePage({ profile, type, api, onBack, onRefresh }) {
             </div>
             <form onSubmit={handleAddLedgerEntry}>
               <div className="form-group" style={{ marginBottom: '16px' }}>
+                <label className="form-label">Transaction Type</label>
                 <select value={newEntry.type} onChange={e => setNewEntry({ ...newEntry, type: e.target.value })} style={{ width: '100%' }}>
                   <option value="CREDIT_GIVEN">Manual Credit (Egg Sale)</option>
                   <option value="PAYMENT_RECEIVED">Payment Received (Cash/Bank)</option>
                 </select>
               </div>
               <div className="form-row">
-                <input type="text" placeholder="Description" value={newEntry.description} onChange={e => setNewEntry({ ...newEntry, description: e.target.value })} required style={{ flex: 2 }} />
-                <input type="number" placeholder="Amount" className="mono" value={newEntry.amount} onChange={e => setNewEntry({ ...newEntry, amount: Number(e.target.value) })} required style={{ flex: 1 }} />
+                <div className="form-group" style={{ flex: 2 }}>
+                  <label className="form-label">Description</label>
+                  <input type="text" placeholder="e.g. Cash received by bank" value={newEntry.description} onChange={e => setNewEntry({ ...newEntry, description: e.target.value })} required />
+                </div>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Amount (PKR)</label>
+                  <input type="number" placeholder="50000" className="mono" value={newEntry.amount} onChange={e => setNewEntry({ ...newEntry, amount: Number(e.target.value) })} required />
+                </div>
               </div>
-              <button type="submit" className="btn-outline" style={{ width: '100%', marginTop: '12px' }}>Add Entry</button>
+              <button type="submit" className="btn-outline" style={{ width: '100%', marginTop: '12px' }}>Post Entry</button>
             </form>
           </div>
         )}
@@ -219,7 +290,7 @@ export function ProfilePage({ profile, type, api, onBack, onRefresh }) {
         <div className="card">
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
             <History size={18} className="text-muted" />
-            <h3 style={{ fontSize: '1rem' }}>Transaction History</h3>
+            <h3 style={{ fontSize: '1rem' }}>Recent History</h3>
           </div>
           <div className="table-container">
             <table>
@@ -235,12 +306,12 @@ export function ProfilePage({ profile, type, api, onBack, onRefresh }) {
                 {distributions.map(d => (
                   <tr key={d._id}>
                     <td className="mono" style={{ fontSize: '0.75rem' }}>{formatDate(d.date)}</td>
-                    <td>Egg Delivery</td>
+                    <td>Egg Delivery ({d.paiti}P {d.trays}T)</td>
                     <td className="mono text-red" style={{ textAlign: 'right' }}>-{d.totalAmount?.toLocaleString()}</td>
                     <td style={{ textAlign: 'right' }}>
                       {!d.paid && (
                         <button onClick={() => handleMarkPaid(d._id)} className="btn-outline" style={{ padding: '4px 8px', fontSize: '0.7rem' }}>
-                          <Check size={12} />
+                          Mark Paid
                         </button>
                       )}
                     </td>

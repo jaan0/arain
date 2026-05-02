@@ -123,16 +123,28 @@ export function ProfilesSection({ api }) {
       {/* Modals */}
       <Modal isOpen={isDealerModalOpen} onClose={() => setDealerModalOpen(false)} title="New Dealer">
         <form onSubmit={handleAddDealer}>
-          <div className="form-group" style={{ marginBottom: '16px' }}><label className="form-label">Name</label><input type="text" required value={newDealer.name} onChange={e => setNewDealer({ ...newDealer, name: e.target.value })} /></div>
-          <div className="form-group" style={{ marginBottom: '16px' }}><label className="form-label">Phone</label><input type="text" value={newDealer.phone} onChange={e => setNewDealer({ ...newDealer, phone: e.target.value })} /></div>
+          <div className="form-group" style={{ marginBottom: '16px' }}>
+            <label className="form-label">Dealer Name</label>
+            <input type="text" placeholder="e.g. Haji Saleem" required value={newDealer.name} onChange={e => setNewDealer({ ...newDealer, name: e.target.value })} />
+          </div>
+          <div className="form-group" style={{ marginBottom: '16px' }}>
+            <label className="form-label">Phone Number</label>
+            <input type="text" placeholder="e.g. 0300-9998887" value={newDealer.phone} onChange={e => setNewDealer({ ...newDealer, phone: e.target.value })} />
+          </div>
           <button type="submit" className="btn-primary" style={{ width: '100%' }}>Create Dealer</button>
         </form>
       </Modal>
 
       <Modal isOpen={isLabourModalOpen} onClose={() => setLabourModalOpen(false)} title="New Labour">
         <form onSubmit={handleAddLabour}>
-          <div className="form-group" style={{ marginBottom: '16px' }}><label className="form-label">Name</label><input type="text" required value={newLabour.name} onChange={e => setNewLabour({ ...newLabour, name: e.target.value })} /></div>
-          <div className="form-group" style={{ marginBottom: '16px' }}><label className="form-label">Monthly Salary (PKR)</label><input type="number" className="mono" required value={newLabour.salary} onChange={e => setNewLabour({ ...newLabour, salary: e.target.value })} /></div>
+          <div className="form-group" style={{ marginBottom: '16px' }}>
+            <label className="form-label">Full Name</label>
+            <input type="text" placeholder="e.g. Mohammad Ali" required value={newLabour.name} onChange={e => setNewLabour({ ...newLabour, name: e.target.value })} />
+          </div>
+          <div className="form-group" style={{ marginBottom: '16px' }}>
+            <label className="form-label">Monthly Salary (PKR)</label>
+            <input type="number" className="mono" placeholder="e.g. 35000" required value={newLabour.salary} onChange={e => setNewLabour({ ...newLabour, salary: e.target.value })} />
+          </div>
           <button type="submit" className="btn-primary" style={{ width: '100%' }}>Create Profile</button>
         </form>
       </Modal>
