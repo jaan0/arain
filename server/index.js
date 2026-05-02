@@ -15,6 +15,31 @@ mongoose.set('bufferCommands', false); // Globally disable buffering
 app.use(express.json());
 app.use(cookieParser());
 
+const connectDB = async () => {
+  if (mongoose.connection.readyState === 1) return;
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000,
+      bufferCommands: false,
+    });
+    console.log('Connected to MongoDB');
+  } catch (err) {
+    console.error('CRITICAL: MongoDB connection failed:', err.message);
+    if (!isProd) process.exit(1);
+    throw err;
+  }
+};
+
+// Ensure DB is connected for ALL routes
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    res.status(500).json({ error: 'Database connection failed' });
+  }
+});
+
 // CORS configuration
 const allowedOrigins = [
   'http://localhost:5173',
@@ -180,35 +205,7 @@ app.use('/api/upload', authenticateToken, require('./routes/upload'));
 
 const PORT = process.env.PORT || 5000;
 
-let cachedDb = null;
 
-const connectDB = async () => {
-  // ONLY return if we are fully connected (1). 
-  // If we are connecting (2), disconnecting (3), or disconnected (0), we should try to connect.
-  if (mongoose.connection.readyState === 1) return;
-
-  try {
-    await mongoose.connect(process.env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 5000,
-      bufferCommands: false, // Stop waiting if not connected
-    });
-    console.log('Connected to MongoDB');
-  } catch (err) {
-    console.error('CRITICAL: MongoDB connection failed:', err.message);
-    if (!isProd) process.exit(1);
-    throw err;
-  }
-};
-
-// Middleware to ensure DB is connected
-app.use(async (req, res, next) => {
-  try {
-    await connectDB();
-    next();
-  } catch (err) {
-    res.status(500).json({ error: 'Database connection failed' });
-  }
-});
 
 if (!isProd) {
   const PORT = process.env.PORT || 5000;
