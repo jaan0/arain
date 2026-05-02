@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './App.css';
@@ -7,11 +7,22 @@ import { FeedSection } from './components/FeedSection';
 import { MedicineSection } from './components/MedicineSection';
 import { ProfilesSection } from './components/ProfilesSection';
 import { SummarySection } from './components/SummarySection';
+import { 
+  LayoutDashboard, 
+  Egg, 
+  Wheat, 
+  Pill, 
+  Users, 
+  LogOut,
+  Bird,
+  ShieldCheck,
+  Smartphone
+} from 'lucide-react';
 
 // API Setup
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
-  withCredentials: true // For sending cookies
+  withCredentials: true 
 });
 
 const LOGIN_ROUTE = import.meta.env.VITE_SECRET_LOGIN_ROUTE || '/admin-login-a8f2';
@@ -26,35 +37,35 @@ function Login() {
 
   const handleRequestOtp = async (e) => {
     e.preventDefault();
-    setStatus('Sending OTP...');
+    setStatus('Requesting access...');
     try {
       const res = await api.post('/auth/request-otp', { email });
       localStorage.setItem('pendingAuthEmail', email);
       localStorage.setItem('maskedEmail', res.data.maskedEmail);
       navigate(LOGIN_ROUTE + '/verify');
     } catch (err) {
-      setStatus('Failed to send OTP. Ensure email is correct.');
+      setStatus('Access denied. Check credentials.');
     }
   };
 
   return (
-    <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg)' }}>
-      <div className="card" style={{ maxWidth: '400px', width: '100%' }}>
-        <h2 style={{ marginBottom: '24px', textAlign: 'center' }}>Secure Portal Access</h2> 
-        <form onSubmit={handleRequestOtp}>
-          <div className="form-group" style={{ marginBottom: '20px' }}>
-            <label className="form-label">Administrator Email</label>
-            <input 
-              type="email" 
-              required 
-              placeholder="Enter your email" 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+    <div className="login-container fade-in">
+      <div className="card" style={{ maxWidth: '400px', width: '90%', padding: '32px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <div style={{ background: 'var(--blue-glass)', width: '64px', height: '64px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+            <ShieldCheck size={32} className="text-blue" />
           </div>
-          <button type="submit" className="btn-primary" style={{ width: '100%' }}>Send Access Code</button>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Admin Portal</h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Secure Management Access</p>
+        </div>
+        <form onSubmit={handleRequestOtp}>
+          <div className="form-group" style={{ marginBottom: '24px' }}>
+            <label className="form-label">Email Address</label>
+            <input type="email" required placeholder="admin@arainfarm.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+          </div>
+          <button type="submit" className="btn-primary" style={{ width: '100%', height: '48px' }}>Send Access Key</button>
         </form>
-        {status && <p style={{ marginTop: '16px', color: 'var(--text-muted)', textAlign: 'center', fontSize: '0.9rem' }}>{status}</p>}
+        {status && <p style={{ marginTop: '20px', color: 'var(--text-muted)', textAlign: 'center', fontSize: '0.85rem' }}>{status}</p>}
       </div>
     </div>
   );
@@ -71,41 +82,35 @@ function VerifyOtp() {
 
   const handleVerify = async (e) => {
     e.preventDefault();
-    setStatus('Verifying...');
+    setStatus('Verifying identity...');
     try {
       await api.post('/auth/verify-otp', { email, otp });
       localStorage.removeItem('pendingAuthEmail');
       localStorage.removeItem('maskedEmail');
       navigate(PORTAL_ROUTE);
     } catch (err) {
-      setStatus('Invalid or expired OTP.');
+      setStatus('Invalid verification code.');
     }
   };
 
   return (
-    <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg)' }}>
-      <div className="card" style={{ maxWidth: '400px', width: '100%' }}>
-        <h2 style={{ marginBottom: '8px', textAlign: 'center' }}>Enter Access Code</h2>
-        <p style={{ textAlign: 'center', color: 'var(--text-muted)', marginBottom: '24px', fontSize: '0.9rem' }}>
-          Code sent to {masked}
-        </p>
-        <form onSubmit={handleVerify}>
-          <div className="form-group" style={{ marginBottom: '20px' }}>
-            <label className="form-label">8-Digit OTP</label>
-            <input 
-              type="text" 
-              required 
-              maxLength={8}
-              className="mono"
-              placeholder="••••••••" 
-              style={{ letterSpacing: '4px', textAlign: 'center', fontSize: '1.2rem' }}
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-            />
+    <div className="login-container fade-in">
+      <div className="card" style={{ maxWidth: '400px', width: '90%', padding: '32px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <div style={{ background: 'var(--blue-glass)', width: '64px', height: '64px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+            <Smartphone size={32} className="text-blue" />
           </div>
-          <button type="submit" className="btn-primary" style={{ width: '100%' }}>Verify & Login</button>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Verify Code</h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Sent to {masked}</p>
+        </div>
+        <form onSubmit={handleVerify}>
+          <div className="form-group" style={{ marginBottom: '24px' }}>
+            <label className="form-label">8-Digit Secret Code</label>
+            <input type="text" required maxLength={8} className="mono" placeholder="••••••••" style={{ letterSpacing: '8px', textAlign: 'center', fontSize: '1.5rem' }} value={otp} onChange={(e) => setOtp(e.target.value)} />
+          </div>
+          <button type="submit" className="btn-primary" style={{ width: '100%', height: '48px' }}>Authorize Device</button>
         </form>
-        {status && <p style={{ marginTop: '16px', color: 'var(--accent-red)', textAlign: 'center', fontSize: '0.9rem' }}>{status}</p>}
+        {status && <p style={{ marginTop: '20px', color: 'var(--accent-red)', textAlign: 'center', fontSize: '0.85rem' }}>{status}</p>}
       </div>
     </div>
   );
@@ -117,12 +122,18 @@ function PortalLayout() {
   const [activeTab, setActiveTab] = useState('summary');
   const navigate = useNavigate();
 
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+  }, [activeTab]);
+
   const handleLogout = async () => {
-    try {
-      await api.post('/auth/logout');
-      navigate(LOGIN_ROUTE);
-    } catch (error) {
-      console.error('Logout failed');
+    if (confirm('Are you sure you want to log out?')) {
+      try {
+        await api.post('/auth/logout');
+        navigate(LOGIN_ROUTE);
+      } catch (error) {
+        console.error('Logout failed');
+      }
     }
   }
 
@@ -132,31 +143,42 @@ function PortalLayout() {
       case 'feed': return <FeedSection api={api} />;
       case 'medicine': return <MedicineSection api={api} />;
       case 'profiles': return <ProfilesSection api={api} />;
-      case 'summary': default: return <SummarySection api={api} />;
+      default: return <SummarySection api={api} />;
     }
   };
 
+  const navItems = [
+    { id: 'summary', label: 'Home', icon: LayoutDashboard },
+    { id: 'eggs', label: 'Eggs', icon: Egg },
+    { id: 'feed', label: 'Feed', icon: Wheat },
+    { id: 'medicine', label: 'Meds', icon: Pill },
+    { id: 'profiles', label: 'People', icon: Users },
+  ];
+
   return (
     <div className="app-container">
-      <header className="header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h1 className="header-title">Arain Poultry Farm</h1>
-          <p className="header-subtitle">Internal Management Portal</p>
+      <header className="app-bar">
+        <div className="app-bar-brand">
+          <Bird size={24} className="text-blue" />
+          <h1 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, letterSpacing: '-0.5px' }}>Arain Poultry</h1>
         </div>
-        <button onClick={handleLogout} className="btn-outline">Logout</button>
+        <button onClick={handleLogout} className="btn-icon text-muted">
+          <LogOut size={20} />
+        </button>
       </header>
 
-      <nav className="tabs-nav">
-        <button className={`tab-btn ${activeTab === 'summary' ? 'active' : ''}`} onClick={() => setActiveTab('summary')}>Summary</button>
-        <button className={`tab-btn ${activeTab === 'eggs' ? 'active' : ''}`} onClick={() => setActiveTab('eggs')}>Eggs</button>
-        <button className={`tab-btn ${activeTab === 'feed' ? 'active' : ''}`} onClick={() => setActiveTab('feed')}>Feed</button>
-        <button className={`tab-btn ${activeTab === 'medicine' ? 'active' : ''}`} onClick={() => setActiveTab('medicine')}>Medicine</button>
-        <button className={`tab-btn ${activeTab === 'profiles' ? 'active' : ''}`} onClick={() => setActiveTab('profiles')}>Profiles</button>
-      </nav>
-
-      <main>
+      <main className="app-content">
         {renderContent()}
       </main>
+
+      <nav className="bottom-nav">
+        {navItems.map((item) => (
+          <button key={item.id} className={`nav-item ${activeTab === item.id ? 'active' : ''}`} onClick={() => setActiveTab(item.id)}>
+            <item.icon size={22} className="nav-item-icon" />
+            <span>{item.label}</span>
+          </button>
+        ))}
+      </nav>
     </div>
   );
 }
@@ -167,17 +189,10 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Default route redirects to not found or acts empty, only secret routes work */}
-        <Route path="/" element={<div style={{ padding: '40px', textAlign: 'center' }}>Nothing to see here.</div>} />
-        
-        {/* Secret Login Routes */}
+        <Route path="/" element={<div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)' }}>Secure System Active.</div>} />
         <Route path={LOGIN_ROUTE} element={<Login />} />
         <Route path={`${LOGIN_ROUTE}/verify`} element={<VerifyOtp />} />
-
-        {/* Secret Portal Route */}
         <Route path={PORTAL_ROUTE} element={<PortalLayout />} />
-
-        {/* Catch all */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
