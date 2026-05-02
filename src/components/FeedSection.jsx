@@ -1,4 +1,6 @@
+import React, { useState, useEffect } from 'react';
 import { Wheat, Plus, Trash2, History, AlertCircle } from 'lucide-react';
+import { formatDate } from '../utils/dateFormatter';
 
 export function FeedSection({ api }) {
   const [stock, setStock] = useState([]);

@@ -1,4 +1,6 @@
-import { Egg, Plus, Trash2, ShoppingCart, TrendingUp, History } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Egg, Plus, Trash2, ShoppingCart, History } from 'lucide-react';
+import { formatDate } from '../utils/dateFormatter';
 
 export function EggsSection({ api }) {
   const [production, setProduction] = useState([]);

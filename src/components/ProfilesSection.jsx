@@ -1,4 +1,7 @@
+import React, { useState, useEffect } from 'react';
 import { Users, UserPlus, Trash2, Phone, Wallet, ChevronRight } from 'lucide-react';
+import { Modal } from './Modal';
+import { ProfilePage } from './ProfilePage';
 
 function Avatar({ url, name, size = 48 }) {
   if (url) return <img src={url} alt={name} style={{ width: size, height: size, borderRadius: 'var(--radius-lg)', objectFit: 'cover', flexShrink: 0 }} />;

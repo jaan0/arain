@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Plus, Trash2, TrendingUp, Receipt, DollarSign, Activity } from 'lucide-react';
+import { Calendar, Plus, Trash2, TrendingUp, Receipt, DollarSign, Activity, History } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { formatDate } from '../utils/dateFormatter';
 

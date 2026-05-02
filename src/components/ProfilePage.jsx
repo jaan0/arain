@@ -1,4 +1,8 @@
+import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Camera, Save, FileText, Plus, Trash2, History, Check, Undo, Phone, MapPin, ExternalLink, Download } from 'lucide-react';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { formatDate } from '../utils/dateFormatter';
 
 function Avatar({ url, name, size = 80 }) {
   if (url) return <img src={url} alt={name} style={{ width: size, height: size, borderRadius: 'var(--radius-lg)', objectFit: 'cover', flexShrink: 0 }} />;
