@@ -182,18 +182,16 @@ const PORT = process.env.PORT || 5000;
 let cachedDb = null;
 
 const connectDB = async () => {
-  if (cachedDb) return cachedDb;
+  if (mongoose.connection.readyState >= 1) return;
 
   try {
-    const db = await mongoose.connect(process.env.MONGODB_URI, {
+    await mongoose.connect(process.env.MONGODB_URI, {
       serverSelectionTimeoutMS: 5000,
+      bufferCommands: false, // Stop waiting if not connected
     });
     console.log('Connected to MongoDB');
-    cachedDb = db;
-    return db;
   } catch (err) {
-    console.error('MongoDB connection error:', err);
-    // In dev, we want to know immediately. In prod, we let the request fail.
+    console.error('CRITICAL: MongoDB connection failed:', err.message);
     if (!isProd) process.exit(1);
     throw err;
   }
