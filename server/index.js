@@ -11,6 +11,7 @@ const { Otp } = require('./models');
 const isProd = process.env.NODE_ENV === 'production';
 
 const app = express();
+mongoose.set('bufferCommands', false); // Globally disable buffering
 app.use(express.json());
 app.use(cookieParser());
 
@@ -182,7 +183,9 @@ const PORT = process.env.PORT || 5000;
 let cachedDb = null;
 
 const connectDB = async () => {
-  if (mongoose.connection.readyState >= 1) return;
+  // ONLY return if we are fully connected (1). 
+  // If we are connecting (2), disconnecting (3), or disconnected (0), we should try to connect.
+  if (mongoose.connection.readyState === 1) return;
 
   try {
     await mongoose.connect(process.env.MONGODB_URI, {
